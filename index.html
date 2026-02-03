@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KMP</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top, #0f1020, #05050a);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    /* NAVBAR */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 20px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15,16,32,0.65);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      z-index: 1000;
+    }
+
+    nav h1 {
+      font-family: 'Orbitron', sans-serif;
+      color: #ff3c78;
+      letter-spacing: 2px;
+    }
+
+    nav a {
+      color: #fff;
+      margin-left: 30px;
+      text-decoration: none;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    nav a:hover { color: #ff3c78; }
+
+    /* HERO */
+    .hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .hero video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7), #05050a);
+      z-index: 1;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h2 {
+      font-size: 3.5rem;
+      font-family: 'Orbitron', sans-serif;
+      text-shadow: 0 0 35px #ff3c78;
+    }
+
+    .hero p {
+      margin: 15px 0 30px;
+      color: #ccc;
+    }
+
+    .hero button {
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #ff3c78, #ff7aa8);
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(255,60,120,0.7);
+    }
+
+    /* SECTION */
+    section {
+      padding: 90px 60px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: 0.7s ease;
+    }
+
+    section.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    section h2 {
+      text-align: center;
+      margin-bottom: 50px;
+      font-size: 2.3rem;
+      color: #ff3c78;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* ANIME GRID */
+    .anime-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 35px;
+    }
+
+    .card {
+      position: relative;
+      border-radius: 18px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #0f1020;
+      transition: transform 0.4s, box-shadow 0.4s;
+    }
+
+    .card img {
+      width: 100%;
+      height: 190px;
+      object-fit: cover;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+      opacity: 0;
+      transition: 0.4s;
+    }
+
+    .card div {
+      position: absolute;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      padding: 18px;
+      transition: 0.4s;
+      z-index: 2;
+    }
+
+    .card:hover::after { opacity: 1; }
+
+    .card:hover div { bottom: 0; }
+
+    .card h3 { color: #ff3c78; }
+
+    .card p {
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    .card:hover {
+      transform: translateY(-12px) scale(1.04);
+      box-shadow: 0 0 45px rgba(255,60,120,0.65);
+    }
+
+    /* TRAILERS SECTION */
+.trailer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 35px;
+}
+
+.trailer-card {
+  background: #0f1020;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  transition: transform 0.4s, box-shadow 0.4s;
+}
+
+.trailer-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 0 35px rgba(255,60,120,0.7);
+}
+
+.trailer-card iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+}
+
+.trailer-card h3 {
+  padding: 15px;
+  font-size: 16px;
+  text-align: center;
+  color: #ff3c78;
+  font-family: 'Orbitron', sans-serif;
+}
+.trailer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 35px;
+}
+
+.trailer {
+  background: #0f1020;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(0,0,0,0.6);
+  transition: transform 0.4s, box-shadow 0.4s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.trailer img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.trailer-content {
+  padding: 15px;
+  text-align: center;
+}
+
+.trailer-content h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: #ff3c78;
+  margin-bottom: 5px;
+}
+
+.trailer-content p {
+  color: #ddd;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* Button */
+.trailer-btn{
+  padding:12px 28px;
+  border:none;
+  border-radius:30px;
+  background:linear-gradient(135deg,#ff3c78,#ff7aa8);
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+  transition:0.3s;
+  box-shadow:0 0 15px rgba(255,60,120,.5);
+}
+.trailer-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 25px rgba(255,60,120,.7);
+}
+
+.trailer:hover{
+  transform: translateY(-8px);
+  box-shadow: 0 0 35px rgba(255,60,120,0.6);
+}
+
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 25px;
+      background: #07070f;
+      color: #777;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 15px 25px; }
+      section { padding: 70px 25px; }
+      .hero h2 { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <h1>KMP</h1>
+  <div>
+    <a href="#anime">Anime</a>
+    <a href="#Trailers">Trailers</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <video id="heroVideo" autoplay muted loop playsinline>
+    <source src="videos/0203 (1).mp4" type="video/mp4">
+  </video>
+
+  <div class="hero-content">
+    <h2>Enter the Anime Multiverse</h2>
+    <p>Legends, battles, emotions — all in one place</p>
+    <button onclick="document.getElementById('anime').scrollIntoView({behavior:'smooth'})">
+      Explore Anime
+    </button>
+  </div>
+</div>
+
+<!-- ANIME -->
+<section id="anime">
+  <h2>Legendary Anime</h2>
+  <div class="anime-grid">
+    <div class="card"><img src="images/SlK0to.jpg"><div><h3>Attack on Titan</h3><p>Humanity's brutal war against Titans.</p></div></div>
+    <div class="card"><img src="images/demon-slayer-2880x1800-17643.jpg"><div><h3>Demon Slayer</h3><p>Blades, demons, and fate.</p></div></div>
+    <div class="card"><img src="images/JJK-header-mobile2.webp"><div><h3>Jujutsu Kaisen</h3><p>Curses meet raw power.</p></div></div>
+    <div class="card"><img src="images/1305112.jpeg"><div><h3>Vinland Saga</h3><p>Viking blood, revenge, and honor.</p></div></div>
+    <div class="card"><img src="images/akatsuki-jinchuuriki-anime-manga-japonese-anian-ninja-shinob.webp"><div><h3>Naruto Shippuden</h3><p>The ninja path to Hokage.</p></div></div>
+    <div class="card"><img src="images/wallpapersden.com_anime-bleach-boys_2000x1412.jpg"><div><h3>Bleach</h3><p>Soul Reapers and epic battles.</p></div></div>
+    <div class="card"><img src="images/wp13605566.jpg"><div><h3>Solo Leveling</h3><p>From weakest to strongest.</p></div></div>
+    <div class="card"><img src="images/thumb-1920-1319295.jpeg"><div><h3>Chainsaw Man</h3><p>Power, blood, and chaos.</p></div></div>
+    <div class="card"><img src="images/one-piece-character-3840x2160-15328.jpeg"><div><h3>One Piece</h3><p>Adventure, friendship, and dreams. </p></div></div>
+    <div class="card"><img src="images/143566-3840x2160-desktop-4k-dragon-ball-z-wallpaper.jpg"><div><h3>Dragon Ball Z</h3><p>Super Saiyan power and epic battles.</p></div></div>
+    <div class="card"><img src="images/my-hero-academia-1920x1080-18932.jpg"><div><h3>My Hero Academia</h3><p>Power, heroism, and school life.</p></div></div>
+    <div class="card"><img src="images/wallpapersden.com_kamishiro-rize-kaneki-ken-tokyo-ghoul_3422x2000.jpg"><div><h3>Tokyo Ghoul</h3><p>Darkness within and survival.</p></div></div>
+    <div class="card"><img src="images/blue-lock-characters-anime-desktop-wallpaper-cover.jpg"><div><h3>Blue Lock</h3><p>Competitive sports and intense training.</p></div></div>
+    <div class="card"><img src="images/HD-wallpaper-light-yagami-death-note.jpg"><div><h3>Death Note</h3><p>Magic, friendship, and epic quests.</p></div></div>
+    <div class="card"><img src="images/871206.png"><div><h3>Black Clover</h3><p>Magical powers and epic adventures.</p></div></div>
+    <div class="card"><img src="images/1311283.jpeg"><div><h3>Fire Force</h3><p>Fire, power, and survival.</p></div></div>
+
+    
+  </div>
+</section>
+
+<!-- TRAILERS -->
+<section id="trailers">
+  <h2>Watch Trailers</h2>
+
+  <div class="trailer-grid">
+
+    <div class="trailer">
+      <img src="images/attack on.jpg" alt="Attack on Titan">
+      <div class="trailer-content">
+        <h3>Attack on Titan</h3>
+        <p>The final war begins.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/LV-nazLVmgo', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/demon.webp" alt="Demon Slayer">
+      <div class="trailer-content">
+        <h3>Demon Slayer</h3>
+        <p>The sword meets fate.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/x7uLutVRBfI', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/jjk.jpg" alt="Jujutsu Kaisen">
+      <div class="trailer-content">
+        <h3>Jujutsu Kaisen</h3>
+        <p>Curses rise.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/pkKu9hLT-t8', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/vinland.jpg" alt="Vinland Saga">
+      <div class="trailer-content">
+        <h3>Vinland Saga</h3>
+        <p>Vikings and revenge.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/pahdCwHJjaU', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/akatsuki-jinchuuriki-anime-manga-japonese-anian-ninja-shinob.webp" alt="Naruto Shippuden">
+      <div class="trailer-content">
+        <h3>Naruto Shippuden</h3>
+        <p>The ninja path to Hokage.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/22R0j8UKRzY', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/wallpapersden.com_anime-bleach-boys_2000x1412.jpg" alt="Bleach">
+      <div class="trailer-content">
+        <h3>Bleach</h3>
+        <p>Soul Reapers rise again.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/KPL8K8Rfyxc', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/wp13605566.jpg" alt="Solo Leveling">
+      <div class="trailer-content">
+        <h3>Solo Leveling</h3>
+        <p>From weakest to strongest.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/I6JIwjWOhnQ', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/thumb-1920-1319295.jpeg" alt="Chainsaw Man">
+      <div class="trailer-content">
+        <h3>Chainsaw Man</h3>
+        <p>Power, blood, chaos.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/EPaoHkV0dYw', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/one-piece-character-3840x2160-15328.jpeg" alt="One Piece">
+      <div class="trailer-content">
+        <h3>One Piece</h3>
+        <p>Adventure, friendship, dreams.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/example1', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/143566-3840x2160-desktop-4k-dragon-ball-z-wallpaper.jpg" alt="Dragon Ball Z">
+      <div class="trailer-content">
+        <h3>Dragon Ball Z</h3>
+        <p>Super Saiyan power unleashed.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/example2', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/my-hero-academia-1920x1080-18932.jpg" alt="My Hero Academia">
+      <div class="trailer-content">
+        <h3>My Hero Academia</h3>
+        <p>Heroism, powers, and school life.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/example3', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+    <div class="trailer">
+      <img src="images/wallpapersden.com_kamishiro-rize-kaneki-ken-tokyo-ghoul_3422x2000.jpg" alt="Tokyo Ghoul">
+      <div class="trailer-content">
+        <h3>Tokyo Ghoul</h3>
+        <p>Darkness and survival.</p>
+        <button class="trailer-btn" onclick="window.open('https://youtu.be/example4', '_blank')">Watch Trailer</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+
+
+
+<footer>
+  © 2026 KMP • Built for true otakus 🌸
+</footer>
+
+<!-- JS -->
+<script>
+ 
+
+  /* SCROLL REVEAL */
+  const sections = document.querySelectorAll("section");
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add("show");
+    });
+  }, { threshold: 0.15 });
+
+  sections.forEach(section => observer.observe(section));
+</script>
+
+</body>
+</html>
